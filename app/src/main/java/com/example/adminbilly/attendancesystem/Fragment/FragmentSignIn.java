@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
@@ -19,6 +20,7 @@ import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.CircleOptions;
+import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
@@ -40,8 +42,11 @@ import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.example.adminbilly.attendancesystem.R;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import at.markushi.ui.CircleButton;
 
@@ -73,6 +78,11 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
     BaiduMap mBaiduMap;
 
     // UI相关
+    private View mInfoWindowView;
+    private TextView mTextView;
+
+    InfoWindow mInfoWindow;
+
     Button requestLocButton;
     CircleButton signInButton;
     boolean isFirstLoc = true; // 是否首次定位
@@ -105,6 +115,9 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
         mMapView = (MapView)view.findViewById(R.id.bmapView);
         requestLocButton = (Button) view.findViewById(R.id.mode_switch);
         signInButton = (CircleButton) view.findViewById(R.id.sign_in_button);
+        LayoutInflater mInflater = getActivity().getLayoutInflater();
+        mInfoWindowView = (View) mInflater.inflate(R.layout.fragment_sign_in_infowindow, null, false);
+        mTextView = (TextView)mInfoWindowView.findViewById(R.id.sign_in_info_textview);
 
         return view;
     }
@@ -155,10 +168,15 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
 
         View.OnClickListener CircleBtnClickListener = new View.OnClickListener() {
             public void onClick(View v) {
-                LatLng currentPos = new LatLng(mCurrentLat,
-                        mCurrentLon);
+                LatLng currentPos = new LatLng(mCurrentLat, mCurrentLon);
                 double distance = DistanceUtil. getDistance(currentPos, mMarker.getPosition());
                 if(distance <= 100){
+                    SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd HH:mm:ss", Locale.ENGLISH);
+                    Date curDate = new Date(System.currentTimeMillis());
+                    String str = getString(R.string.sign_in_time) + formatter.format(curDate);
+                    mTextView.setText(str);
+                    mInfoWindow = new InfoWindow(mInfoWindowView, currentPos, -47);
+                    mBaiduMap.showInfoWindow(mInfoWindow);
                     Toast.makeText(FragmentSignIn.this.getActivity(), "Signed in.",
                             Toast.LENGTH_LONG).show();
                 }else{
@@ -241,7 +259,7 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
     /**
      * 定位SDK监听函数
      */
-    public class MyLocationListenner implements BDLocationListener {
+    private class MyLocationListenner implements BDLocationListener {
         @Override
         public void onReceiveLocation(BDLocation location) {
             // map view 销毁后不在处理新接收的位置
