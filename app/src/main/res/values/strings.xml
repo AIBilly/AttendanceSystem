@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Attendance System</string>
+    <string name="login">Login</string>
+    <string name="sign_up">Sign up</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="password_again">Password again</string>
+    <string name="history">History</string>
+    <string name="track">Track</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="author">Made By Jiajie Hu</string>
+    <string name="my_task">My task</string>
+    <string name="new_task">New task</string>
+    <string name="normal">Normal</string>
+    <string name="follow">Follow</string>
+    <string name="compass">Compass</string>
+</resources>
