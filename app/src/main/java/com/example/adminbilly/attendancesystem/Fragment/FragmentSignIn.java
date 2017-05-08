@@ -5,6 +5,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,13 +24,13 @@ import com.baidu.mapapi.map.CircleOptions;
 import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapStatus;
-import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.map.Overlay;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
@@ -41,6 +42,8 @@ import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.example.adminbilly.attendancesystem.R;
+import com.example.adminbilly.attendancesystem.Task;
+import com.example.adminbilly.attendancesystem.TaskManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,6 +54,7 @@ import java.util.Locale;
 import at.markushi.ui.CircleButton;
 
 import static android.content.Context.SENSOR_SERVICE;
+import static com.example.adminbilly.attendancesystem.Utils.inSameDay;
 
 /**
  * Created by AdminBilly on 2017/4/6.
@@ -90,9 +94,12 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
     private float direction;
 
     //Marker相关
-    private Marker mMarker;
-    BitmapDescriptor bd = BitmapDescriptorFactory
+    BitmapDescriptor task_un = BitmapDescriptorFactory
             .fromResource(R.mipmap.icon_openmap_mark);
+    BitmapDescriptor task_ac = BitmapDescriptorFactory
+            .fromResource(R.mipmap.icon_task_accomplished_mark);
+    BitmapDescriptor solid_marker = BitmapDescriptorFactory
+            .fromResource(R.mipmap.icon_gcoding);
 
     //geoSearch相关
     GeoCoder mSearch = null; // 搜索模块，也可去掉地图模块独立使用
@@ -100,7 +107,12 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
     //长按地图相关
     // 保存点中的点id
     Marker preMarker = null; //前一个Marker
-    List<Marker> markers = new ArrayList<Marker>();
+
+    //TaskManager
+    TaskManager mTM = TaskManager.getInstance();
+
+    //今天的任务
+    ArrayList<Task> mTodayTaskList = mTM.getTodayTaskList();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -130,6 +142,8 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
 
         mSensorManager = (SensorManager) getActivity().getSystemService(SENSOR_SERVICE);//获取传感器管理服务
         mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
+
+        drawRangeAndMarker();
 
         requestLocButton.setText(getString(R.string.normal));
         View.OnClickListener ReqBtnClickListener = new View.OnClickListener() {
@@ -168,27 +182,43 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
 
         View.OnClickListener CircleBtnClickListener = new View.OnClickListener() {
             public void onClick(View v) {
+                Date curDate = new Date(System.currentTimeMillis());
                 LatLng currentPos = new LatLng(mCurrentLat, mCurrentLon);
-                double distance = DistanceUtil. getDistance(currentPos, mMarker.getPosition());
-                if(distance <= 100){
-                    SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd HH:mm:ss", Locale.ENGLISH);
-                    Date curDate = new Date(System.currentTimeMillis());
-                    String str = getString(R.string.sign_in_time) + formatter.format(curDate);
-                    mTextView.setText(str);
-                    mInfoWindow = new InfoWindow(mInfoWindowView, currentPos, -47);
-                    mBaiduMap.showInfoWindow(mInfoWindow);
-                    Toast.makeText(FragmentSignIn.this.getActivity(), "Signed in.",
-                            Toast.LENGTH_LONG).show();
-                }else{
-                    Toast.makeText(FragmentSignIn.this.getActivity(), "Sign in failed..",
+                int flag = 0;
+                for (int i = 0; i < mTodayTaskList.size(); i++){
+                    double distance = DistanceUtil.getDistance(currentPos, mTodayTaskList.get(i).getLocation());
+                    if(distance <= 100){
+                        mTodayTaskList.get(i).setState(1);
+                        mTodayTaskList.get(i).setSign_in_loc(currentPos);
+                        mTodayTaskList.get(i).setSign_in_time(curDate);
+                        mTodayTaskList.get(i).getMarker().remove();
+                        MarkerOptions ooA = new MarkerOptions().position(currentPos).icon(task_ac)
+                                .zIndex(9).draggable(false);
+                        Marker mMarker = (Marker) (mBaiduMap.addOverlay(ooA));
+                        mTodayTaskList.get(i).setMarker(mMarker);
+                        mTodayTaskList.get(i).getRange().remove();
+                        mTodayTaskList.get(i).setRange(null);
+
+                        mTM.setTaskListElement(i);
+
+                        SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm:ss", Locale.ENGLISH);
+                        String str = getString(R.string.sign_in_time) + " " + formatter.format(curDate);
+                        mTextView.setText(str);
+                        mInfoWindow = new InfoWindow(mInfoWindowView, currentPos, -47);
+                        mBaiduMap.showInfoWindow(mInfoWindow);
+                        Toast.makeText(FragmentSignIn.this.getActivity(), "Signed in.",
+                                Toast.LENGTH_LONG).show();
+                        flag = 1;
+                        break;
+                    }
+                }
+                if(flag == 0){
+                    Toast.makeText(FragmentSignIn.this.getActivity(), "Out of sign in range.",
                             Toast.LENGTH_LONG).show();
                 }
-
             }
         };
         signInButton.setOnClickListener(CircleBtnClickListener);
-
-        drawRangeAndMarker();
 
     }
 
@@ -225,14 +255,42 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
     }
 
     private void drawRangeAndMarker(){
-        LatLng llCircle = new LatLng(39.969925972732035, 116.36477099614513);
-        OverlayOptions ooCircle = new CircleOptions().fillColor(0x661fb293)
-                .center(llCircle).stroke(new Stroke(5, 0x00FFFFFF))
-                .radius(100);
-        mBaiduMap.addOverlay(ooCircle);
-        MarkerOptions ooA = new MarkerOptions().position(llCircle).icon(bd)
-                .zIndex(9).draggable(false);
-        mMarker = (Marker) (mBaiduMap.addOverlay(ooA));
+        Date curDate = new Date(System.currentTimeMillis());
+
+        for (int i = 0; i < mTodayTaskList.size(); i++){
+            if (inSameDay(curDate, mTodayTaskList.get(i).getDeadline())){
+                int state = mTodayTaskList.get(i).getState();
+
+                if (state == 0){
+                    LatLng taskLoc = mTodayTaskList.get(i).getLocation();
+                    OverlayOptions ooCircle = new CircleOptions().fillColor(0x661fb293)
+                            .center(taskLoc).stroke(new Stroke(5, 0x00FFFFFF))
+                            .radius(100);
+                    Overlay mRange = mBaiduMap.addOverlay(ooCircle);
+
+                    mTodayTaskList.get(i).setRange(mRange);
+
+                    MarkerOptions ooA = new MarkerOptions().position(taskLoc).icon(task_un)
+                            .zIndex(9).draggable(false);
+                    Marker mMarker = (Marker) (mBaiduMap.addOverlay(ooA));
+
+                    mTodayTaskList.get(i).setMarker(mMarker);
+                    mTM.setTaskListElement(i);
+
+                }else if (state == 1){
+                    LatLng taskLoc = mTodayTaskList.get(i).getSign_in_loc();
+
+                    mTodayTaskList.get(i).setRange(null);
+
+                    MarkerOptions ooA = new MarkerOptions().position(taskLoc).icon(task_ac)
+                            .zIndex(9).draggable(false);
+                    Marker mMarker = (Marker) (mBaiduMap.addOverlay(ooA));
+
+                    mTodayTaskList.get(i).setMarker(mMarker);
+                    mTM.setTaskListElement(i);
+                }
+            }
+        }
     }
 
     @Override
@@ -319,7 +377,7 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
         if(preMarker != null){
             preMarker.remove();
         }
-        MarkerOptions ooA = new MarkerOptions().position(point).icon(bd);
+        MarkerOptions ooA = new MarkerOptions().position(point).icon(solid_marker);
         TempMarker = (Marker) (mBaiduMap.addOverlay(ooA));
         // 反Geo搜索
         mSearch.reverseGeoCode(new ReverseGeoCodeOption()
@@ -327,8 +385,6 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
         MapStatus.Builder builder = new MapStatus.Builder();
         builder.target(point);
         mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-        //MapStatusUpdate update = MapStatusUpdateFactory.newLatLng(point);
-        //mBaiduMap.setMapStatus(update);
         preMarker = TempMarker;
     }
 
@@ -339,13 +395,34 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
         if (marker == null) {
             return false;
         }
-        LatLng ptCenter = marker.getPosition();
-        // 反Geo搜索
-        mSearch.reverseGeoCode(new ReverseGeoCodeOption()
-                .location(ptCenter));
-        MapStatusUpdate update = MapStatusUpdateFactory.newLatLng(marker.getPosition());
-        mBaiduMap.setMapStatus(update);
-        //currentID = marker.getExtraInfo().getString("id");
+        for (int i = 0; i < mTodayTaskList.size(); i++){
+            Task tempTask = mTodayTaskList.get(i);
+            if (marker == tempTask.getMarker()){
+                if (tempTask.getState() == 0){
+                    LatLng ptCenter = marker.getPosition();
+                    // 反Geo搜索
+                    mSearch.reverseGeoCode(new ReverseGeoCodeOption()
+                            .location(ptCenter));
+                    MapStatus.Builder builder = new MapStatus.Builder();
+                    builder.target(ptCenter);
+                    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+                }else if (tempTask.getState() == 1){
+                    SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm:ss", Locale.ENGLISH);
+                    String str = getString(R.string.sign_in_time) + " " + formatter.format(mTodayTaskList.get(i).getSign_in_time());
+                    mTextView.setText(str);
+                    mInfoWindow = new InfoWindow(mInfoWindowView, mTodayTaskList.get(i).getSign_in_loc(), -47);
+                    mBaiduMap.showInfoWindow(mInfoWindow);
+                }
+            }else{
+                LatLng ptCenter = marker.getPosition();
+                // 反Geo搜索
+                mSearch.reverseGeoCode(new ReverseGeoCodeOption()
+                        .location(ptCenter));
+                MapStatus.Builder builder = new MapStatus.Builder();
+                builder.target(ptCenter);
+                mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+            }
+        }
         return true;
     }
 

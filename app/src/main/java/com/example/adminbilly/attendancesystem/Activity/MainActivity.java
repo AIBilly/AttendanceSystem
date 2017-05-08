@@ -10,6 +10,7 @@ import com.example.adminbilly.attendancesystem.Fragment.FragmentSignIn;
 import com.example.adminbilly.attendancesystem.Fragment.FragmentTask;
 import com.example.adminbilly.attendancesystem.R;
 import com.example.adminbilly.attendancesystem.TabEntity;
+import com.example.adminbilly.attendancesystem.TaskManager;
 import com.flyco.tablayout.CommonTabLayout;
 import com.flyco.tablayout.listener.CustomTabEntity;
 
@@ -38,6 +39,9 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        TaskManager mTM = TaskManager.getInstance();
+
         Toolbar mToolbarTb = (Toolbar) findViewById(R.id.tb_toolbar);
         setSupportActionBar(mToolbarTb);
         initView();

@@ -1,4 +1,7 @@
-package com.example.adminbilly.attendancesystem.BaiduMap;
+package com.example.adminbilly.attendancesystem;
+
+import java.util.Calendar;
+import java.util.Date;
 
 public class Utils {
 	public final static String CoorType_GCJ02 = "gcj02";
@@ -24,5 +27,38 @@ public class Utils {
 
 	public static float[] EARTH_WEIGHT = {0.1f,0.2f,0.4f,0.6f,0.8f}; // 推算计算权重_地球
 	//public static float[] MOON_WEIGHT = {0.0167f,0.033f,0.067f,0.1f,0.133f}; 
-	//public static float[] MARS_WEIGHT = {0.034f,0.068f,0.152f,0.228f,0.304f}; 
+	//public static float[] MARS_WEIGHT = {0.034f,0.068f,0.152f,0.228f,0.304f};
+
+	public static boolean inSameDay(Date date1, Date Date2) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date1);
+		int year1 = calendar.get(Calendar.YEAR);
+		int day1 = calendar.get(Calendar.DAY_OF_YEAR);
+
+		calendar.setTime(Date2);
+		int year2 = calendar.get(Calendar.YEAR);
+		int day2 = calendar.get(Calendar.DAY_OF_YEAR);
+
+		if ((year1 == year2) && (day1 == day2)) {
+			return true;
+		}
+		return false;
+	}
+
+	public static int dateCompare(Date date1, Date date2){
+		Calendar c1 = Calendar.getInstance();
+		Calendar c2 = Calendar.getInstance();
+
+		c1.setTime(date1);
+		c2.setTime(date2);
+
+		return c1.compareTo(c2);
+
+		/*if(result==0)
+			System.out.println("c1相等c2");
+		else if(result<0)
+			System.out.println("c1小于c2");
+		else
+			System.out.println("c1大于c2");*/
+	}
 }
