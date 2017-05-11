@@ -62,10 +62,6 @@ import static com.example.adminbilly.attendancesystem.Utils.inSameDay;
 
 public class FragmentSignIn extends BaseFragment implements SensorEventListener, OnGetGeoCoderResultListener,
         BaiduMap.OnMapLongClickListener, BaiduMap.OnMarkerClickListener, BaiduMap.OnMapClickListener {
-
-    public static FragmentSignIn newInstance() {
-        return new FragmentSignIn();
-    }
     // 定位相关
     LocationClient mLocClient;
     public MyLocationListenner myListener = new MyLocationListenner();
@@ -108,11 +104,12 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
     // 保存点中的点id
     Marker preMarker = null; //前一个Marker
 
-    //TaskManager
-    TaskManager mTM = TaskManager.getInstance();
-
     //今天的任务
-    ArrayList<Task> mTodayTaskList = mTM.getTodayTaskList();
+    private ArrayList<Task> mTodayTaskList = mTM.getTodayTaskList();
+
+    public FragmentSignIn() {
+
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -186,30 +183,32 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
                 LatLng currentPos = new LatLng(mCurrentLat, mCurrentLon);
                 int flag = 0;
                 for (int i = 0; i < mTodayTaskList.size(); i++){
-                    double distance = DistanceUtil.getDistance(currentPos, mTodayTaskList.get(i).getLocation());
-                    if(distance <= 100){
-                        mTodayTaskList.get(i).setState(1);
-                        mTodayTaskList.get(i).setSign_in_loc(currentPos);
-                        mTodayTaskList.get(i).setSign_in_time(curDate);
-                        mTodayTaskList.get(i).getMarker().remove();
-                        MarkerOptions ooA = new MarkerOptions().position(currentPos).icon(task_ac)
-                                .zIndex(9).draggable(false);
-                        Marker mMarker = (Marker) (mBaiduMap.addOverlay(ooA));
-                        mTodayTaskList.get(i).setMarker(mMarker);
-                        mTodayTaskList.get(i).getRange().remove();
-                        mTodayTaskList.get(i).setRange(null);
+                    if (mTodayTaskList.get(i).getState() == 0){
+                        double distance = DistanceUtil.getDistance(currentPos, mTodayTaskList.get(i).getLocation());
+                        if(distance <= 100){
+                            mTodayTaskList.get(i).setState(1);
+                            mTodayTaskList.get(i).setSign_in_loc(currentPos);
+                            mTodayTaskList.get(i).setSign_in_time(curDate);
+                            mTodayTaskList.get(i).getMarker().remove();
+                            MarkerOptions ooA = new MarkerOptions().position(currentPos).icon(task_ac)
+                                    .zIndex(9).draggable(false);
+                            Marker mMarker = (Marker) (mBaiduMap.addOverlay(ooA));
+                            mTodayTaskList.get(i).setMarker(mMarker);
+                            mTodayTaskList.get(i).getRange().remove();
+                            mTodayTaskList.get(i).setRange(null);
 
-                        mTM.setTaskListElement(i);
+                            mTM.setTaskListElement(i);
 
-                        SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm:ss", Locale.ENGLISH);
-                        String str = getString(R.string.sign_in_time) + " " + formatter.format(curDate);
-                        mTextView.setText(str);
-                        mInfoWindow = new InfoWindow(mInfoWindowView, currentPos, -47);
-                        mBaiduMap.showInfoWindow(mInfoWindow);
-                        Toast.makeText(FragmentSignIn.this.getActivity(), "Signed in.",
-                                Toast.LENGTH_LONG).show();
-                        flag = 1;
-                        break;
+                            SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm:ss", Locale.ENGLISH);
+                            String str = getString(R.string.sign_in_time) + " " + formatter.format(curDate);
+                            mTextView.setText(str);
+                            mInfoWindow = new InfoWindow(mInfoWindowView, currentPos, -47);
+                            mBaiduMap.showInfoWindow(mInfoWindow);
+                            Toast.makeText(FragmentSignIn.this.getActivity(), "Signed in.",
+                                    Toast.LENGTH_LONG).show();
+                            flag = 1;
+                            break;
+                        }
                     }
                 }
                 if(flag == 0){

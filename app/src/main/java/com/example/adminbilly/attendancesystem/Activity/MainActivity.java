@@ -44,8 +44,10 @@ public class MainActivity extends BaseActivity {
 
         Toolbar mToolbarTb = (Toolbar) findViewById(R.id.tb_toolbar);
         setSupportActionBar(mToolbarTb);
+
         initView();
         initData();
+
         //给tab设置数据和关联的fragment
         mTabLayout.setTabData(mTabEntities, this, R.id.fl_change, mFragments);
         //设置红点
@@ -57,9 +59,9 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initData() {
-        mFragments.add(FragmentTask.newInstance());
-        mFragments.add(FragmentSignIn.newInstance());
-        mFragments.add(FragmentMe.newInstance());
+        mFragments.add(new FragmentTask());
+        mFragments.add(new FragmentSignIn());
+        mFragments.add(new FragmentMe());
         //设置tab的标题、选中图标、未选中图标
         for (int i = 0; i < mTitles.length; i++) {
             mTabEntities.add(new TabEntity(mTitles[i], mIconSelectIds[i], mIconUnselectIds[i]));

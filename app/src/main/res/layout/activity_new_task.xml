@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.Toolbar
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/new_task_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:title="@string/app_name"
+        android:theme="@style/toolbar_theme"
+        android:layout_alignParentTop="true">
+
+    </android.support.v7.widget.Toolbar>
+
+    <LinearLayout
+        android:id="@+id/input_name_bar"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/new_task_toolbar"
+        android:layout_height="48dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/receiver_name"
+            android:gravity="center_vertical"/>
+
+        <EditText
+            android:id="@+id/new_task_receiver"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:layout_weight="1"
+            android:gravity="center_vertical"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/select_time_bar"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/input_name_bar"
+        android:layout_height="48dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/time_selected"
+            android:gravity="center_vertical"/>
+
+        <TextView
+            android:id="@+id/new_task_deadline"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"/>
+
+        <Button
+            android:id="@+id/new_task_time_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/pick_time"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/select_location_bar"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/select_time_bar"
+        android:layout_height="48dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/location_seleceted"
+            android:gravity="center_vertical"/>
+
+        <TextView
+            android:id="@+id/new_task_location"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"/>
+
+    </LinearLayout>
+
+    <com.baidu.mapapi.map.MapView
+        android:id="@+id/nbmapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/select_location_bar"
+        android:layout_above="@+id/button_bar"
+        android:clickable="true" />
+
+    <LinearLayout
+        android:id="@+id/button_bar"
+        android:gravity="right"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_height="48dp">
+
+        <Button
+            android:id="@+id/new_task_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/confirm"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

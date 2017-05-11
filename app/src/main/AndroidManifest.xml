@@ -66,6 +66,20 @@
             android:name="com.example.adminbilly.attendancesystem.Activity.MainActivity">
 
         </activity>
+        <activity
+            android:name="com.example.adminbilly.attendancesystem.Activity.NewTaskActivity"
+            android:parentActivityName="com.example.adminbilly.attendancesystem.Activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.adminbilly.attendancesystem.Activity.MainActivity"/>
+        </activity>
+        <activity
+            android:name="com.example.adminbilly.attendancesystem.Activity.HistoryActivity"
+            android:parentActivityName="com.example.adminbilly.attendancesystem.Activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.adminbilly.attendancesystem.Activity.MainActivity"/>
+        </activity>
     </application>
 
 </manifest>

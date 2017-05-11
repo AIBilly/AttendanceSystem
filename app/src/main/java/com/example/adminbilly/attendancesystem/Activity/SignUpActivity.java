@@ -13,19 +13,23 @@ import com.example.adminbilly.attendancesystem.R;
  */
 
 public class SignUpActivity extends BaseActivity{
+    private Toolbar suToolbar;
+    private Button button_confirm_sign_up;
+    private Button button_cancel_sign_up;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
-        Toolbar suToolbar = (Toolbar) findViewById(R.id.sign_up_toolbar);
+        suToolbar = (Toolbar) findViewById(R.id.sign_up_toolbar);
         setSupportActionBar(suToolbar);
 
         //使用app bar的导航功能
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        Button button_confirm_sign_up = (Button)findViewById(R.id.sign_up_confirm);
-        Button button_cancel_sign_up = (Button)findViewById(R.id.sign_up_cancel);
+        button_confirm_sign_up = (Button)findViewById(R.id.sign_up_confirm);
+        button_cancel_sign_up = (Button)findViewById(R.id.sign_up_cancel);
 
         button_confirm_sign_up.setOnClickListener(new View.OnClickListener() {
             @Override

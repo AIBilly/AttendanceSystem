@@ -12,6 +12,7 @@ import java.util.Date;
 
 public class Task {
     private int id;
+    private int index;
     private String source;
     private String possessor;
     private Date deadline;
@@ -23,8 +24,9 @@ public class Task {
     private Marker marker;
     private Overlay range;
 
-    public Task(int i, String s, String p, Date ddl, LatLng ll, int st, Date sit, LatLng sil){
+    public Task(int i, int in, String s, String p, Date ddl, LatLng ll, int st, Date sit, LatLng sil){
         id = i;
+        index = in;
         source = s;
         possessor = p;
         deadline = ddl;
@@ -38,6 +40,10 @@ public class Task {
 
     public int getId(){
         return id;
+    }
+
+    public int getIndex(){
+        return index;
     }
 
     public String getSource(){

@@ -25,20 +25,27 @@ import com.example.adminbilly.attendancesystem.R;
  */
 
 public class LoginActivity extends BaseActivity {
+
+    private Toolbar lgToolbar;
+    private Button button_confirm_login;
+    private Button button_cancel_login;
+    private EditText input_username;
+    private EditText input_password;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        Toolbar lgToolbar = (Toolbar) findViewById(R.id.login_toolbar);
+        lgToolbar = (Toolbar) findViewById(R.id.login_toolbar);
         setSupportActionBar(lgToolbar);
 
         //使用app bar的导航功能
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        Button button_confirm_login = (Button)findViewById(R.id.login_confirm);
-        Button button_cancel_login = (Button)findViewById(R.id.login_cancel);
-        EditText input_username = (EditText)findViewById(R.id.username_input) ;
-        EditText input_password = (EditText)findViewById(R.id.password_input) ;
+        button_confirm_login = (Button)findViewById(R.id.login_confirm);
+        button_cancel_login = (Button)findViewById(R.id.login_cancel);
+        input_username = (EditText)findViewById(R.id.username_input) ;
+        input_password = (EditText)findViewById(R.id.password_input) ;
 
         button_confirm_login.setOnClickListener(new View.OnClickListener() {
             @Override

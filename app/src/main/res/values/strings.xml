@@ -17,5 +17,9 @@
     <string name="normal">Normal</string>
     <string name="follow">Follow</string>
     <string name="compass">Compass</string>
-    <string name="sign_in_time">Sign in time:</string>
+    <string name="sign_in_time">Sign in name:</string>
+    <string name="receiver_name">Receiver name:</string>
+    <string name="time_selected">Time selected:</string>
+    <string name="pick_time">Pick time</string>
+    <string name="location_seleceted">Location selected:</string>
 </resources>

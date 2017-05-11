@@ -15,6 +15,10 @@ import com.example.adminbilly.attendancesystem.R;
  */
 
 public class WelcomeActivity extends BaseActivity {
+    private Toolbar welToolbar;
+    private Button button_login;
+    private Button button_sign_up;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,11 +28,11 @@ public class WelcomeActivity extends BaseActivity {
 
         setContentView(R.layout.activity_welcome);
 
-        Toolbar welToolbar = (Toolbar) findViewById(R.id.wel_toolbar);
+        welToolbar = (Toolbar) findViewById(R.id.wel_toolbar);
         setSupportActionBar(welToolbar);
 
-        Button button_login = (Button)findViewById(R.id.login_button);
-        Button button_sign_up = (Button)findViewById(R.id.sign_up_button);
+        button_login = (Button)findViewById(R.id.login_button);
+        button_sign_up = (Button)findViewById(R.id.sign_up_button);
 
         button_login.setOnClickListener(new View.OnClickListener() {
             @Override
