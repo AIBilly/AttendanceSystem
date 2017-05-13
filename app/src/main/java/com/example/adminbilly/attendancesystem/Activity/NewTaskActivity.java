@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +16,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Cache;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.DiskBasedCache;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -37,19 +41,36 @@ import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.example.adminbilly.attendancesystem.Fragment.FragmentSignIn;
 import com.example.adminbilly.attendancesystem.R;
+import com.example.adminbilly.attendancesystem.Task;
+import com.example.adminbilly.attendancesystem.myJsonRequest;
 import com.jzxiang.pickerview.TimePickerDialog;
 import com.jzxiang.pickerview.data.Type;
 import com.jzxiang.pickerview.listener.OnDateSetListener;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.ZonedDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
+import org.threeten.bp.temporal.TemporalAccessor;
+
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+
+import static com.example.adminbilly.attendancesystem.Activity.LoginActivity.curUser;
+import static com.example.adminbilly.attendancesystem.Utils.inSameDay;
 
 /**
  * Created by AdminBilly on 2017/5/8.
  */
 
 public class NewTaskActivity extends BaseActivity implements BaiduMap.OnMapLongClickListener, OnGetGeoCoderResultListener, OnDateSetListener {
+
+    //本地广播数据类型实例
+    private LocalBroadcastManager localBroadcastManager;
 
     // 定位相关
     LocationClient mLocClient;
@@ -79,6 +100,11 @@ public class NewTaskActivity extends BaseActivity implements BaiduMap.OnMapLongC
     private TextView location_selected;
     private Button button_confirm_create;
 
+    private ArrayList<Task> mTaskList = mTM.getTaskList();
+
+    //今天的任务
+    private ArrayList<Task> mTodayTaskList = mTM.getTodayTaskList();
+
     //geoSearch相关
     GeoCoder mSearch = null; // 搜索模块，也可去掉地图模块独立使用
 
@@ -87,12 +113,15 @@ public class NewTaskActivity extends BaseActivity implements BaiduMap.OnMapLongC
 
     //TimePicker
     TimePickerDialog mDialogAll;
-    SimpleDateFormat sf = new SimpleDateFormat ("MMM dd yyyy HH:mm:ss", Locale.ENGLISH);
+    SimpleDateFormat sf = new SimpleDateFormat ("MMM dd yyyy HH:mm", Locale.ENGLISH);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_task);
+
+        //获取本地广播实例
+        localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         ntToolbar = (Toolbar) findViewById(R.id.new_task_toolbar);
         setSupportActionBar(ntToolbar);
@@ -134,7 +163,104 @@ public class NewTaskActivity extends BaseActivity implements BaiduMap.OnMapLongC
         button_confirm_create.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
+                String receiver = input_receiver.getText().toString();
+                String deadline = time_selected.getText().toString();
+                String location = location_selected.getText().toString();
+                if(receiver.equals("")){
+                    Toast.makeText(NewTaskActivity.this, "Please input the receiver!",
+                            Toast.LENGTH_LONG).show();
+                }else if(deadline.equals("")){
+                    Toast.makeText(NewTaskActivity.this, "Please select a time!",
+                            Toast.LENGTH_LONG).show();
+                }else if(location.equals("")){
+                    Toast.makeText(NewTaskActivity.this, "Please longclick the map to select a location!",
+                            Toast.LENGTH_LONG).show();
+                }else{
+                    Cache cache = new DiskBasedCache(getCacheDir(), 1024 * 1024); // 1MB cap
+                    JSONObject jsonBody = new JSONObject();
+                    try{
+                        jsonBody.put("deadline", deadline);
+                        jsonBody.put("location", location);
+                        jsonBody.put("possessor", receiver);
+                        jsonBody.put("signInLoc", null);
+                        jsonBody.put("signInTime", null);
+                        jsonBody.put("source", curUser);
+                        jsonBody.put("state", 0);
+                    }catch (Exception e){
 
+                    }
+                    myJsonRequest.createTask(jsonBody, cache, new myJsonRequest.volleyCallback(){
+                        @Override
+                        public void getResponse(JSONObject response){
+                            Log.d("success","11111111111111111111111111111111111111111111111");
+
+                            mTaskList.clear();
+                            mTodayTaskList.clear();
+
+                            //连接服务器获取任务
+                            Cache cache3 = new DiskBasedCache(getCacheDir(), 1024 * 1024); // 1MB cap
+
+                            myJsonRequest.getTask(cache3, new myJsonRequest.volleyArrayCallback(){
+                                @Override
+                                public void getResponse(JSONArray response){
+                                    SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm", Locale.ENGLISH);
+                                    try{
+                                        for(int i = 0;i < response.length(); i++){
+                                            JSONObject jsontemp = response.getJSONObject(i);
+                                            String deadline = jsontemp.getString("deadline");
+                                            String location = jsontemp.getString("location");
+                                            String possessor = jsontemp.getString("possessor");
+                                            String signInLoc = jsontemp.getString("signInLoc");
+                                            String signInTime = jsontemp.getString("signInTime");
+                                            String source = jsontemp.getString("source");
+                                            int state = jsontemp.getInt("state");
+                                            int id = jsontemp.getInt("id");
+
+                                            String[] locll = location.split(",");
+                                            LatLng ll = new LatLng(Double.parseDouble(locll[0]),Double.parseDouble(locll[1]));
+                                            Date date1 = formatter.parse(deadline, new ParsePosition(0));
+                                            LatLng signll = null;
+                                            Date date2 = null;
+                                            if(state == 1) {
+                                                locll = signInLoc.split(",");
+                                                signll = new LatLng(Double.parseDouble(locll[0]), Double.parseDouble(locll[1]));
+                                                date2 = formatter.parse(signInTime, new ParsePosition(0));
+                                            }
+
+                                            Task temp = new Task( id, i, source, possessor, date1, ll, state, date2, signll);
+                                            mTaskList.add(temp);
+                                            Date curDate = new Date(System.currentTimeMillis());
+                                            Log.e("11111111111111111",mTaskList.get(i).getSource());
+                                            if (inSameDay(curDate, date1)) {
+                                                mTodayTaskList.add(temp);
+                                            }
+                                        }
+                                    }catch (Exception e){
+
+                                    }
+
+                                    Intent intent = new Intent("com.example.adminbilly.updateUI.LOCAL_BROADCAST");
+                                    //发送本地广播
+                                    localBroadcastManager.sendBroadcast(intent);
+
+                                }
+
+                                @Override
+                                public void getResponse(VolleyError error){
+                                    Log.e("failed","222222222222222222222");
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void getResponse(VolleyError error){
+                            Log.e("failed","22222222222222222222222222222222222222222222222");
+                        }
+                    });
+
+                    finish();
+
+                }
             }
         });
 

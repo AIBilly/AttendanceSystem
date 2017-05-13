@@ -1,10 +1,15 @@
 package com.example.adminbilly.attendancesystem.Fragment;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +37,8 @@ import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.Overlay;
 import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.Polyline;
+import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.SearchResult;
@@ -41,6 +48,7 @@ import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baidu.mapapi.utils.DistanceUtil;
+import com.example.adminbilly.attendancesystem.BaiduMap.MarkerAndRange;
 import com.example.adminbilly.attendancesystem.R;
 import com.example.adminbilly.attendancesystem.Task;
 import com.example.adminbilly.attendancesystem.TaskManager;
@@ -62,6 +70,13 @@ import static com.example.adminbilly.attendancesystem.Utils.inSameDay;
 
 public class FragmentSignIn extends BaseFragment implements SensorEventListener, OnGetGeoCoderResultListener,
         BaiduMap.OnMapLongClickListener, BaiduMap.OnMarkerClickListener, BaiduMap.OnMapClickListener {
+
+    private IntentFilter intentFilter;
+    private LocalReceiver localReceiver;
+
+    //本地广播数据类型实例
+    private LocalBroadcastManager localBroadcastManager;
+
     // 定位相关
     LocationClient mLocClient;
     public MyLocationListenner myListener = new MyLocationListenner();
@@ -107,6 +122,14 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
     //今天的任务
     private ArrayList<Task> mTodayTaskList = mTM.getTodayTaskList();
 
+    //任务的Marker和Range
+    private ArrayList<MarkerAndRange> mTaskOverlayList = new ArrayList<MarkerAndRange>();
+
+    //轨迹点
+    private ArrayList<LatLng> trackLocList = new ArrayList<LatLng>();
+
+    Polyline mTrackline = null;
+
     public FragmentSignIn() {
 
     }
@@ -135,12 +158,20 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        //获取本地广播实例
+        localBroadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
+
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("com.example.adminbilly.updateUI.LOCAL_BROADCAST");
+
+        //创建广播接收器实例并注册将其接收器与action标签进行绑定
+        localReceiver = new LocalReceiver();
+        localBroadcastManager.registerReceiver(localReceiver,intentFilter);
+
         initBaiduMap();
 
         mSensorManager = (SensorManager) getActivity().getSystemService(SENSOR_SERVICE);//获取传感器管理服务
         mCurrentMode = MyLocationConfiguration.LocationMode.NORMAL;
-
-        drawRangeAndMarker();
 
         requestLocButton.setText(getString(R.string.normal));
         View.OnClickListener ReqBtnClickListener = new View.OnClickListener() {
@@ -183,23 +214,24 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
                 LatLng currentPos = new LatLng(mCurrentLat, mCurrentLon);
                 int flag = 0;
                 for (int i = 0; i < mTodayTaskList.size(); i++){
-                    if (mTodayTaskList.get(i).getState() == 0){
-                        double distance = DistanceUtil.getDistance(currentPos, mTodayTaskList.get(i).getLocation());
+                    Task tempTask = mTodayTaskList.get(i);
+                    MarkerAndRange tempMar = mTaskOverlayList.get(i);
+                    if (tempTask.getState() == 0){
+                        double distance = DistanceUtil.getDistance(currentPos, tempTask.getLocation());
                         if(distance <= 100){
-                            mTodayTaskList.get(i).setState(1);
-                            mTodayTaskList.get(i).setSign_in_loc(currentPos);
-                            mTodayTaskList.get(i).setSign_in_time(curDate);
-                            mTodayTaskList.get(i).getMarker().remove();
+                            tempTask.setState(1);
+                            tempTask.setSign_in_loc(currentPos);
+                            tempTask.setSign_in_time(curDate);
+
+                            tempMar.getMarker().remove();
                             MarkerOptions ooA = new MarkerOptions().position(currentPos).icon(task_ac)
                                     .zIndex(9).draggable(false);
                             Marker mMarker = (Marker) (mBaiduMap.addOverlay(ooA));
-                            mTodayTaskList.get(i).setMarker(mMarker);
-                            mTodayTaskList.get(i).getRange().remove();
-                            mTodayTaskList.get(i).setRange(null);
+                            tempMar.setMarker(mMarker);
+                            tempMar.getRange().remove();
+                            tempMar.setRange(null);
 
-                            mTM.setTaskListElement(i);
-
-                            SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm:ss", Locale.ENGLISH);
+                            SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm", Locale.ENGLISH);
                             String str = getString(R.string.sign_in_time) + " " + formatter.format(curDate);
                             mTextView.setText(str);
                             mInfoWindow = new InfoWindow(mInfoWindowView, currentPos, -47);
@@ -248,12 +280,21 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
         LocationClientOption option = new LocationClientOption();
         option.setOpenGps(true); // 打开gps
         option.setCoorType("bd09ll"); // 设置坐标类型
-        option.setScanSpan(1000);
+        option.setScanSpan(5000);
         mLocClient.setLocOption(option);
         mLocClient.start();
     }
 
     private void drawRangeAndMarker(){
+
+        for(int i = 0; i < mTaskOverlayList.size(); i++){
+            mTaskOverlayList.get(i).getMarker().remove();
+            if(mTaskOverlayList.get(i).getRange() != null)
+                mTaskOverlayList.get(i).getRange().remove();
+        }
+
+        mTaskOverlayList.clear();
+
         Date curDate = new Date(System.currentTimeMillis());
 
         for (int i = 0; i < mTodayTaskList.size(); i++){
@@ -267,26 +308,22 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
                             .radius(100);
                     Overlay mRange = mBaiduMap.addOverlay(ooCircle);
 
-                    mTodayTaskList.get(i).setRange(mRange);
-
                     MarkerOptions ooA = new MarkerOptions().position(taskLoc).icon(task_un)
                             .zIndex(9).draggable(false);
                     Marker mMarker = (Marker) (mBaiduMap.addOverlay(ooA));
 
-                    mTodayTaskList.get(i).setMarker(mMarker);
-                    mTM.setTaskListElement(i);
+                    MarkerAndRange mAR = new MarkerAndRange(mMarker, mRange);
+                    mTaskOverlayList.add(mAR);
 
                 }else if (state == 1){
                     LatLng taskLoc = mTodayTaskList.get(i).getSign_in_loc();
-
-                    mTodayTaskList.get(i).setRange(null);
 
                     MarkerOptions ooA = new MarkerOptions().position(taskLoc).icon(task_ac)
                             .zIndex(9).draggable(false);
                     Marker mMarker = (Marker) (mBaiduMap.addOverlay(ooA));
 
-                    mTodayTaskList.get(i).setMarker(mMarker);
-                    mTM.setTaskListElement(i);
+                    MarkerAndRange mAR = new MarkerAndRange(mMarker, null);
+                    mTaskOverlayList.add(mAR);
                 }
             }
         }
@@ -332,13 +369,23 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
                     .direction(mCurrentDirection).latitude(location.getLatitude())
                     .longitude(location.getLongitude()).build();
             mBaiduMap.setMyLocationData(locData);
+            if(trackLocList.size() > 720){
+                trackLocList.remove(0);
+            }
+            LatLng ll = new LatLng(location.getLatitude(),
+                    location.getLongitude());
+            trackLocList.add(ll);
             if (isFirstLoc) {
                 isFirstLoc = false;
-                LatLng ll = new LatLng(location.getLatitude(),
-                        location.getLongitude());
                 MapStatus.Builder builder = new MapStatus.Builder();
                 builder.target(ll).zoom(18.0f);
                 mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+            }else{
+                if(mTrackline != null)
+                    mTrackline.remove();
+                OverlayOptions ooPolyline = new PolylineOptions().width(30)
+                        .color(0xAAFF0000).points(trackLocList);
+                mTrackline = (Polyline) mBaiduMap.addOverlay(ooPolyline);
             }
         }
 
@@ -396,7 +443,8 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
         }
         for (int i = 0; i < mTodayTaskList.size(); i++){
             Task tempTask = mTodayTaskList.get(i);
-            if (marker == tempTask.getMarker()){
+            MarkerAndRange tempMar = mTaskOverlayList.get(i);
+            if (marker == tempMar.getMarker()){
                 if (tempTask.getState() == 0){
                     LatLng ptCenter = marker.getPosition();
                     // 反Geo搜索
@@ -406,7 +454,7 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
                     builder.target(ptCenter);
                     mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
                 }else if (tempTask.getState() == 1){
-                    SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm:ss", Locale.ENGLISH);
+                    SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm", Locale.ENGLISH);
                     String str = getString(R.string.sign_in_time) + " " + formatter.format(mTodayTaskList.get(i).getSign_in_time());
                     mTextView.setText(str);
                     mInfoWindow = new InfoWindow(mInfoWindowView, mTodayTaskList.get(i).getSign_in_loc(), -47);
@@ -461,6 +509,10 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
 
     @Override
     public void onDestroy() {
+
+        //取消注册调用的是unregisterReceiver()方法并传入接收器实例
+        localBroadcastManager.unregisterReceiver(localReceiver);
+
         // 退出时销毁定位
         mLocClient.stop();
         // 关闭定位图层
@@ -469,6 +521,13 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
         mSearch.destroy();
         mMapView = null;
         super.onDestroy();
+    }
+
+    class LocalReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent){
+            drawRangeAndMarker();
+        }
     }
 
 }

@@ -21,9 +21,6 @@ public class Task {
     private Date sign_in_time;
     private LatLng sign_in_loc;
 
-    private Marker marker;
-    private Overlay range;
-
     public Task(int i, int in, String s, String p, Date ddl, LatLng ll, int st, Date sit, LatLng sil){
         id = i;
         index = in;
@@ -34,8 +31,6 @@ public class Task {
         state = st;
         sign_in_time = sit;
         sign_in_loc = sil;
-        marker = null;
-        range = null;
     }
 
     public int getId(){
@@ -74,14 +69,6 @@ public class Task {
         return sign_in_loc;
     }
 
-    public Marker getMarker(){
-        return marker;
-    }
-
-    public Overlay getRange(){
-        return range;
-    }
-
     public void setId(int i){
         id = i;
     }
@@ -112,13 +99,5 @@ public class Task {
 
     public void setSign_in_loc(LatLng ll){
         sign_in_loc = ll;
-    }
-
-    public void setMarker(Marker m){
-        marker = m;
-    }
-
-    public void setRange(Overlay o){
-        range = o;
     }
 }

@@ -1,8 +1,12 @@
 package com.example.adminbilly.attendancesystem;
 
+import android.app.Activity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.Cache;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.DiskBasedCache;
 import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.Overlay;
 import com.baidu.mapapi.model.LatLng;
@@ -13,6 +17,8 @@ import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.example.adminbilly.attendancesystem.Fragment.FragmentTask;
+
+import org.json.JSONObject;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -39,35 +45,13 @@ public class TaskManager {
     }
 
     private TaskManager(){
-        updateTaskList();
-        updateTodayTaskList();
+        TaskList.clear();
+        TaskAddresses.clear();
+        todayTaskList.clear();
     }
 
     public static final TaskManager getInstance(){
         return TaskManagerHolder.instance;
-    }
-
-    private void updateTaskList(){
-        TaskList.clear();
-        TaskAddresses.clear();
-        //连接服务器获取任务
-        for (int i = 0; i < 10; i++){
-            SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm:ss", Locale.ENGLISH);
-            Date date1 = formatter.parse("May 08 2017 23:59:59",new ParsePosition(0));
-            LatLng ll = new LatLng(39.969925972732035, 116.36477099614513);
-            Task tempTask = new Task( i, i, "Billy", "Billy", date1, ll, 0, null, null);
-            TaskList.add(tempTask);
-        }
-    }
-
-    private void updateTodayTaskList(){
-        todayTaskList.clear();
-        Date curDate = new Date(System.currentTimeMillis());
-        for (int i = 0; i < TaskList.size(); i++){
-            if (inSameDay(curDate, TaskList.get(i).getDeadline())){
-                todayTaskList.add(TaskList.get(i));
-            }
-        }
     }
 
     public ArrayList<Task> getTaskList(){
@@ -80,10 +64,5 @@ public class TaskManager {
 
     public ArrayList<String> getTaskAddresses(){
         return TaskAddresses;
-    }
-
-    public void setTaskListElement(int index){
-        int id = todayTaskList.get(index).getIndex();
-        TaskList.set(id, todayTaskList.get(index));
     }
 }

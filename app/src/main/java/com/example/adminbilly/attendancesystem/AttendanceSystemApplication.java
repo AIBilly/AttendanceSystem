@@ -2,6 +2,7 @@ package com.example.adminbilly.attendancesystem;
 
 import com.baidu.mapapi.SDKInitializer;
 import com.example.adminbilly.attendancesystem.BaiduMap.LocationService;
+import com.jakewharton.threetenabp.AndroidThreeTen;
 
 import android.app.Application;
 import android.app.Service;
@@ -22,5 +23,6 @@ public class AttendanceSystemApplication extends Application {
         locationService = new LocationService(getApplicationContext());
         mVibrator =(Vibrator)getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
         SDKInitializer.initialize(getApplicationContext());
+        AndroidThreeTen.init(this);
     }
 }
