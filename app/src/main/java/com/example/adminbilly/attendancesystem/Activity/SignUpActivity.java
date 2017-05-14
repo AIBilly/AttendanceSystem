@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.Cache;
 import com.android.volley.VolleyError;
@@ -49,31 +50,45 @@ public class SignUpActivity extends BaseActivity{
         button_confirm_sign_up.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(input_username.getText().toString().equals("")){
+                    Toast.makeText(SignUpActivity.this, "Please input username!",
+                            Toast.LENGTH_LONG).show();
+                }else if(input_password.getText().toString().equals("")){
+                    Toast.makeText(SignUpActivity.this, "Please input password!",
+                            Toast.LENGTH_LONG).show();
+                }else if(input_password_again.getText().toString().equals("")){
+                    Toast.makeText(SignUpActivity.this, "Please input password again!",
+                            Toast.LENGTH_LONG).show();
+                }else if(!(input_password.getText().toString().equals(input_password_again.getText().toString()))){
+                    Toast.makeText(SignUpActivity.this, "The passwords you entered must be the same!",
+                            Toast.LENGTH_LONG).show();
+                }else{
+                    Cache cache = new DiskBasedCache(getCacheDir(), 1024 * 1024); // 1MB cap
+                    JSONObject jsonBody = new JSONObject();
+                    try{
+                        jsonBody.put("login", input_username.getText().toString());
+                        jsonBody.put("password", input_password.getText().toString());
+                    }catch (Exception e){
 
-                Cache cache = new DiskBasedCache(getCacheDir(), 1024 * 1024); // 1MB cap
-                JSONObject jsonBody = new JSONObject();
-                try{
-                    //jsonBody.put("email", "308771053@qq.com");
-                    jsonBody.put("login", "LiNing");
-                    jsonBody.put("password", "Admin");
-                }catch (Exception e){
+                    }
+                    myJsonRequest.signUp(jsonBody, cache, new myJsonRequest.volleyCallback(){
+                        @Override
+                        public void getResponse(JSONObject response){
+                            Log.d("success","1111111111111111111111111111111111111111111111");
+                            Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                        }
 
+                        @Override
+                        public void getResponse(VolleyError error){
+                            Toast.makeText(SignUpActivity.this, "Sign up failed!",
+                                    Toast.LENGTH_LONG).show();
+                            Log.d("failed","22222222222222222222222222222222222222222222222");
+                        }
+                    });
                 }
-                myJsonRequest.signUp(jsonBody, cache, new myJsonRequest.volleyCallback(){
-                    @Override
-                    public void getResponse(JSONObject response){
-                        Log.d("success","1111111111111111111111111111111111111111111111");
-                    }
 
-                    @Override
-                    public void getResponse(VolleyError error){
-                        Log.d("failed","22222222222222222222222222222222222222222222222");
-                    }
-                });
-
-                Intent intent = new Intent(SignUpActivity.this, WelcomeActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
             }
         });
 
