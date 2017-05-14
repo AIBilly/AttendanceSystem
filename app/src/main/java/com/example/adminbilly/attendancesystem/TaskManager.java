@@ -37,8 +37,6 @@ public class TaskManager {
     private ArrayList<Task> TaskList = new ArrayList<Task>();
     //当天的任务
     private ArrayList<Task> todayTaskList = new ArrayList<Task>();
-    //任务的GeoCoder反编码得到的地址
-    private ArrayList<String> TaskAddresses = new ArrayList<String>();
 
     private static class TaskManagerHolder{
         private static final TaskManager instance = new TaskManager();
@@ -46,7 +44,6 @@ public class TaskManager {
 
     private TaskManager(){
         TaskList.clear();
-        TaskAddresses.clear();
         todayTaskList.clear();
     }
 
@@ -62,7 +59,7 @@ public class TaskManager {
         return todayTaskList;
     }
 
-    public ArrayList<String> getTaskAddresses(){
-        return TaskAddresses;
+    public void modifyTaskListByTodayTaskList(int i){
+        TaskList.set(todayTaskList.get(i).getIndex(), todayTaskList.get(i));
     }
 }

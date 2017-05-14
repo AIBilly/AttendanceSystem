@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.android.volley.Cache;
@@ -196,6 +197,34 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 finish();
+            }
+        });
+
+        input_username.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+            @Override
+            public void onFocusChange(View view, boolean hasFocus){
+                EditText et = (EditText)view;
+                if (!hasFocus) {// 失去焦点
+                    et.setHint(et.getTag().toString());
+                } else {
+                    String hint=et.getHint().toString();
+                    et.setTag(hint);//保存预设字
+                    et.setHint(null);
+                }
+            }
+        });
+
+        input_password.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+            @Override
+            public void onFocusChange(View view, boolean hasFocus){
+                EditText et = (EditText)view;
+                if (!hasFocus) {// 失去焦点
+                    et.setHint(et.getTag().toString());
+                } else {
+                    String hint=et.getHint().toString();
+                    et.setTag(hint);//保存预设字
+                    et.setHint(null);
+                }
             }
         });
     }

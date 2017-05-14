@@ -6,6 +6,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.android.volley.Cache;
 import com.android.volley.VolleyError;
@@ -24,6 +25,9 @@ public class SignUpActivity extends BaseActivity{
     private Toolbar suToolbar;
     private Button button_confirm_sign_up;
     private Button button_cancel_sign_up;
+    private EditText input_username;
+    private EditText input_password;
+    private EditText input_password_again;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +42,9 @@ public class SignUpActivity extends BaseActivity{
 
         button_confirm_sign_up = (Button)findViewById(R.id.sign_up_confirm);
         button_cancel_sign_up = (Button)findViewById(R.id.sign_up_cancel);
+        input_username = (EditText) findViewById(R.id.username_input);
+        input_password = (EditText) findViewById(R.id.password_input);
+        input_password_again = (EditText) findViewById(R.id.password_input_again);
 
         button_confirm_sign_up.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,6 +81,48 @@ public class SignUpActivity extends BaseActivity{
             @Override
             public void onClick(View view) {
                 finish();
+            }
+        });
+
+        input_username.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+            @Override
+            public void onFocusChange(View view, boolean hasFocus){
+                EditText et = (EditText)view;
+                if (!hasFocus) {// 失去焦点
+                    et.setHint(et.getTag().toString());
+                } else {
+                    String hint=et.getHint().toString();
+                    et.setTag(hint);//保存预设字
+                    et.setHint(null);
+                }
+            }
+        });
+
+        input_password.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+            @Override
+            public void onFocusChange(View view, boolean hasFocus){
+                EditText et = (EditText)view;
+                if (!hasFocus) {// 失去焦点
+                    et.setHint(et.getTag().toString());
+                } else {
+                    String hint=et.getHint().toString();
+                    et.setTag(hint);//保存预设字
+                    et.setHint(null);
+                }
+            }
+        });
+
+        input_password_again.setOnFocusChangeListener(new View.OnFocusChangeListener(){
+            @Override
+            public void onFocusChange(View view, boolean hasFocus){
+                EditText et = (EditText)view;
+                if (!hasFocus) {// 失去焦点
+                    et.setHint(et.getTag().toString());
+                } else {
+                    String hint=et.getHint().toString();
+                    et.setTag(hint);//保存预设字
+                    et.setHint(null);
+                }
             }
         });
     }

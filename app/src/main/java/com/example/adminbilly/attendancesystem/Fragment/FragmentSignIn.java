@@ -18,6 +18,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Cache;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.DiskBasedCache;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -52,7 +55,12 @@ import com.example.adminbilly.attendancesystem.BaiduMap.MarkerAndRange;
 import com.example.adminbilly.attendancesystem.R;
 import com.example.adminbilly.attendancesystem.Task;
 import com.example.adminbilly.attendancesystem.TaskManager;
+import com.example.adminbilly.attendancesystem.myJsonRequest;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,6 +70,7 @@ import java.util.Locale;
 import at.markushi.ui.CircleButton;
 
 import static android.content.Context.SENSOR_SERVICE;
+import static com.example.adminbilly.attendancesystem.Activity.LoginActivity.curUser;
 import static com.example.adminbilly.attendancesystem.Utils.inSameDay;
 
 /**
@@ -210,6 +219,7 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
 
         View.OnClickListener CircleBtnClickListener = new View.OnClickListener() {
             public void onClick(View v) {
+                SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm", Locale.ENGLISH);
                 Date curDate = new Date(System.currentTimeMillis());
                 LatLng currentPos = new LatLng(mCurrentLat, mCurrentLon);
                 int flag = 0;
@@ -223,6 +233,16 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
                             tempTask.setSign_in_loc(currentPos);
                             tempTask.setSign_in_time(curDate);
 
+                            mTM.modifyTaskListByTodayTaskList(i);
+
+                            int id = tempTask.getId();
+                            String source = tempTask.getSource();
+                            String possessor = tempTask.getPossessor();
+                            String deadline = formatter.format(tempTask.getDeadline());
+                            String location = String.valueOf(tempTask.getLocation().latitude) + "," + String.valueOf(tempTask.getLocation().longitude);
+                            String signInTime = formatter.format(tempTask.getSign_in_time());
+                            String signInLoc = String.valueOf(tempTask.getSign_in_loc().latitude) + "," + String.valueOf(tempTask.getSign_in_loc().longitude);
+
                             tempMar.getMarker().remove();
                             MarkerOptions ooA = new MarkerOptions().position(currentPos).icon(task_ac)
                                     .zIndex(9).draggable(false);
@@ -231,7 +251,41 @@ public class FragmentSignIn extends BaseFragment implements SensorEventListener,
                             tempMar.getRange().remove();
                             tempMar.setRange(null);
 
-                            SimpleDateFormat formatter = new SimpleDateFormat ("MMM dd yyyy HH:mm", Locale.ENGLISH);
+                            Cache cache = new DiskBasedCache(FragmentSignIn.this.getActivity().getCacheDir(), 1024 * 1024); // 1MB cap
+                            JSONObject jsonBody = new JSONObject();
+                            try{
+                                jsonBody.put("id", id);
+                                jsonBody.put("deadline", deadline);
+                                jsonBody.put("location", location);
+                                jsonBody.put("possessor", possessor);
+                                jsonBody.put("signInLoc", signInLoc);
+                                jsonBody.put("signInTime", signInTime);
+                                jsonBody.put("source", source);
+                                jsonBody.put("state", 1);
+                            }catch (Exception e){
+
+                            }
+                            myJsonRequest.updateTask(jsonBody, cache, new myJsonRequest.volleyCallback(){
+                                @Override
+                                public void getResponse(JSONObject response){
+                                    try{
+                                        Log.e("succeed","11111111111111111111111111111111111111111111111");
+                                    }catch (Exception e){
+
+                                    }
+
+                                    Intent intent = new Intent("com.example.adminbilly.updateUI.LOCAL_BROADCAST");
+                                    //发送本地广播
+                                    localBroadcastManager.sendBroadcast(intent);
+
+                                }
+
+                                @Override
+                                public void getResponse(VolleyError error){
+                                    Log.e("failed","22222222222222222222222222222222222222222222222");
+                                }
+                            });
+
                             String str = getString(R.string.sign_in_time) + " " + formatter.format(curDate);
                             mTextView.setText(str);
                             mInfoWindow = new InfoWindow(mInfoWindowView, currentPos, -47);

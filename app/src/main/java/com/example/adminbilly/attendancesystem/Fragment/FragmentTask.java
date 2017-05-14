@@ -61,8 +61,6 @@ public class FragmentTask extends BaseFragment implements OnGetGeoCoderResultLis
     //任务列表
     private ArrayList<Task> mTaskList = mTM.getTaskList();
 
-    private ArrayList<String> TaskAddresses = mTM.getTaskAddresses();
-
     private ListView mTaskView;
     private RelativeLayout button_new_task;
 
@@ -74,10 +72,8 @@ public class FragmentTask extends BaseFragment implements OnGetGeoCoderResultLis
             switch (msg.what){
                 case UPDATE_ADDRESS:
                     String str = msg.getData().getString("result");
-                    TaskAddresses.add(str);
                     TaskViewItem temp = taskViewItemsList.get(counter_results);
                     temp.setLocation(str);
-                    taskViewItemsList.set(counter_results, temp);
                     adapter.notifyDataSetChanged();
                     counter_results++;
                     break;
