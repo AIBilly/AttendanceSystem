@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:background="@mipmap/background"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <android.support.v7.widget.Toolbar
@@ -14,10 +16,50 @@
 
     </android.support.v7.widget.Toolbar>
 
+    <LinearLayout
+        android:id="@+id/admin_look_up_bar"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/colorSecondary"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/employee_name"
+            android:gravity="center_vertical"
+            android:textColor="@color/white"
+            android:textSize="16sp"/>
+        <EditText
+            android:id="@+id/username_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:textColor="@color/white"
+            android:textCursorDrawable="@null" />
+        <Button
+            android:id="@+id/look_up"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/confirm"
+            android:background="@color/buttonRed"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
     <ListView
         android:id="@+id/history_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_below="@+id/admin_look_up_bar">
 
     </ListView>
 

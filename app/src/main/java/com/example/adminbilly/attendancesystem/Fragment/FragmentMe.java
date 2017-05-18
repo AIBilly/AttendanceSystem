@@ -8,7 +8,12 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.example.adminbilly.attendancesystem.Activity.HistoryActivity;
+import com.example.adminbilly.attendancesystem.Activity.SignUpActivity;
+import com.example.adminbilly.attendancesystem.Activity.WelcomeActivity;
 import com.example.adminbilly.attendancesystem.R;
+
+import static com.example.adminbilly.attendancesystem.Activity.LoginActivity.id_token;
+import static com.example.adminbilly.attendancesystem.Activity.LoginActivity.curUser;
 
 /**
  * Created by AdminBilly on 2017/4/6.
@@ -70,7 +75,11 @@ public class FragmentMe extends BaseFragment {
         button_logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                id_token = null;
+                curUser = null;
+                Intent intent = new Intent(FragmentMe.this.getActivity(), WelcomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
             }
         });
     }

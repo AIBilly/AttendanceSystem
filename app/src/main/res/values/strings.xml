@@ -22,4 +22,5 @@
     <string name="time_selected">Time selected:</string>
     <string name="pick_time">Pick time</string>
     <string name="location_seleceted">Location selected:</string>
+    <string name="employee_name">Employee name:</string>
 </resources>

@@ -35,6 +35,8 @@ import java.util.Locale;
 import android.os.Handler;
 import android.widget.Toast;
 
+import static com.example.adminbilly.attendancesystem.Activity.LoginActivity.curUser;
+
 /**
  * Created by AdminBilly on 2017/4/6.
  */
@@ -137,6 +139,10 @@ public class FragmentTask extends BaseFragment implements OnGetGeoCoderResultLis
                 startActivity(intent);
             }
         });
+
+        if(!curUser.equals("admin")){
+            button_new_task.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void updateTaskViewItem(){
