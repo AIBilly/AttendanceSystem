@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.example.adminbilly.attendancesystem.Activity.HistoryActivity;
 import com.example.adminbilly.attendancesystem.Activity.SignUpActivity;
@@ -24,6 +25,7 @@ public class FragmentMe extends BaseFragment {
     private RelativeLayout button_track;
     private RelativeLayout button_settings;
     private RelativeLayout button_logout;
+    private TextView current_user;
 
     public FragmentMe() {
 
@@ -43,12 +45,17 @@ public class FragmentMe extends BaseFragment {
         button_track = (RelativeLayout)view.findViewById(R.id.track_button);
         button_settings = (RelativeLayout)view.findViewById(R.id.settings_button);
         button_logout = (RelativeLayout)view.findViewById(R.id.logout_button);
+        current_user = (TextView)view.findViewById(R.id.current_user);
         return view;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if(curUser!=null){
+            current_user.setText("Welcome, " + curUser + "!");
+        }
 
         button_history.setOnClickListener(new View.OnClickListener() {
             @Override
