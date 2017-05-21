@@ -26,8 +26,8 @@ import java.util.ArrayList;
 
 public class LoginActivity extends BaseActivity {
 
-    public static String id_token = null;
-    public static String curUser = null;
+    public static String id_token = null;//登录成功后从服务器获取的id_token
+    public static String curUser = null;//当前已登录用户
 
     private Toolbar lgToolbar;
     private Button button_confirm_login;

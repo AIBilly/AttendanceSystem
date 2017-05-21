@@ -47,7 +47,7 @@ import static com.example.adminbilly.attendancesystem.Activity.LoginActivity.cur
 
 public class HistoryActivity extends BaseActivity implements OnGetGeoCoderResultListener {
 
-    public static final int UPDATE_ADDRESS = 1;
+    public static final int UPDATE_ADDRESS = 1;//Message.what用于更新地址信息
 
     GeoCoder mSearch = null; // 搜索模块，也可去掉地图模块独立使用
 
