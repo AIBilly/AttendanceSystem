@@ -151,6 +151,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initData() {
+        mTaskList.clear();
+        mTodayTaskList.clear();
         mFragments.add(new FragmentTask());
         mFragments.add(new FragmentSignIn());
         mFragments.add(new FragmentMe());

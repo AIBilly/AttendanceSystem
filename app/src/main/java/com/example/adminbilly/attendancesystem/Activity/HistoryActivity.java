@@ -231,8 +231,4 @@ public class HistoryActivity extends BaseActivity implements OnGetGeoCoderResult
             }
         }
     }
-
-    private void updateLookUpTaskViewItem(){
-
-    }
 }

@@ -38,7 +38,7 @@ public class TaskManager {
     //当天的任务
     private ArrayList<Task> todayTaskList = new ArrayList<Task>();
 
-    private static class TaskManagerHolder{
+    private static class TaskManagerHolder{//用于创建单子
         private static final TaskManager instance = new TaskManager();
     }
 
@@ -47,7 +47,7 @@ public class TaskManager {
         todayTaskList.clear();
     }
 
-    public static final TaskManager getInstance(){
+    public static final TaskManager getInstance(){//获取实例
         return TaskManagerHolder.instance;
     }
 

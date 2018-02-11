@@ -11,15 +11,15 @@ import java.util.Date;
  */
 
 public class Task {
-    private int id;
-    private int index;
-    private String source;
-    private String possessor;
-    private Date deadline;
-    private LatLng location;
-    private int state;
-    private Date sign_in_time;
-    private LatLng sign_in_loc;
+    private int id;//任务ID
+    private int index;//从服务器读取下来的任务编号
+    private String source;//任务发布者用户名
+    private String possessor;//任务接受者用户名
+    private Date deadline;//任务截止日期
+    private LatLng location;//任务地点
+    private int state;//任务状态
+    private Date sign_in_time;//任务签到时间
+    private LatLng sign_in_loc;//任务签到地点
 
     public Task(int i, int in, String s, String p, Date ddl, LatLng ll, int st, Date sit, LatLng sil){
         id = i;
